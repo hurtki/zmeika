@@ -18,13 +18,17 @@ func (g *Game) applyMoves(moves []Move) {
 				headsSeen[cell.PlayerID] = cord{x: x, y: y}
 			}
 			// DECREMENT ALL THE VALUES
-			g.plot[x][y].Value -= 1
+			if g.plot[x][y].Value > 0 {
+				g.plot[x][y].Value--
+			}
 		}
 	}
 
 	for _, m := range moves {
-		if cord, ok := headsSeen[m.PlayerID]; ok {
-			g.applyOneMoveWithHeadCord(m, cord)
+		if headCord, ok := headsSeen[m.PlayerID]; ok {
+			g.applyOneMoveWithHeadCord(m, headCord)
+			continue
+		} else {
 			continue
 		}
 	}
@@ -42,7 +46,7 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	case left:
 		moveCord = cord{x: c.x, y: c.y - 1}
 	case right:
-		moveCord = cord{x: c.x - 1, y: c.y + 1}
+		moveCord = cord{x: c.x, y: c.y + 1}
 	}
 
 	if !InGaps(moveCord, len(g.plot)) {
@@ -71,6 +75,9 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	// should have value one bigger, then previous head cell
 	// cause all the cells were decremented, before applying moves
 	g.plot[moveCord.x][moveCord.y].Value = startCell.Value + 1
+
+	// not forgetting to change previous head
+	g.plot[c.x][c.y].IsHead = false
 }
 
 // Removes all the nearby cells with playerID
@@ -86,15 +93,13 @@ func (g *Game) removePlayer(c cord, playerID int) {
 		playerID = v.PlayerID
 	}
 
-	if v.Value == 0 {
+	if v.Value == 0 || v.PlayerID != playerID {
 		return
 	}
 
-	if v.PlayerID == playerID {
-		g.plot[c.x][c.y] = Cell{}
-	}
+	g.plot[c.x][c.y] = Cell{}
 	g.removePlayer(cord{x: c.x - 1, y: c.y}, playerID)
-	g.removePlayer(cord{x: c.x - 1, y: c.y + 1}, playerID)
+	g.removePlayer(cord{x: c.x + 1, y: c.y}, playerID)
 	g.removePlayer(cord{x: c.x, y: c.y + 1}, playerID)
-	g.removePlayer(cord{x: c.x, y: c.y}, playerID)
+	g.removePlayer(cord{x: c.x, y: c.y - 1}, playerID)
 }

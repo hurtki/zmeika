@@ -57,6 +57,7 @@ func (g *Game) Start() {
 		g.mu.Lock()
 
 		moves := DeduplicateMoves(g.movesQueue)
+		g.applyMoves(moves)
 
 		g.mu.Unlock()
 
