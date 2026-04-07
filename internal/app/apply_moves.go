@@ -27,10 +27,32 @@ func (g *Game) applyMoves(moves []Move) {
 	for _, m := range moves {
 		if headCord, ok := headsSeen[m.PlayerID]; ok {
 			g.applyOneMoveWithHeadCord(m, headCord)
+			delete(headsSeen, m.PlayerID)
 			continue
 		} else {
 			continue
 		}
+	}
+
+	// if there was no move, we also need to move it
+	// going through every seen head, that wasn't already deleted
+	for id, c := range headsSeen {
+		m := Move{PlayerID: id}
+		switch {
+		// prevous was upper => go down
+		case InGaps(cord{c.x - 1, c.y}, len(g.plot)) && g.plot[c.x-1][c.y].PlayerID == id:
+			m.Direction = down
+		// previous was lower => go up
+		case InGaps(cord{c.x + 1, c.y}, len(g.plot)) && g.plot[c.x+1][c.y].PlayerID == id:
+			m.Direction = up
+		// previous was at left to head => go right
+		case InGaps(cord{c.x, c.y - 1}, len(g.plot)) && g.plot[c.x][c.y-1].PlayerID == id:
+			m.Direction = right
+		// previous was at right to head => go left
+		case InGaps(cord{c.x, c.y + 1}, len(g.plot)) && g.plot[c.x][c.y+1].PlayerID == id:
+			m.Direction = left
+		}
+		g.applyOneMoveWithHeadCord(m, c)
 	}
 }
 

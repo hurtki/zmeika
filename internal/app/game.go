@@ -58,6 +58,8 @@ func (g *Game) Start() {
 
 		moves := DeduplicateMoves(g.movesQueue)
 		g.applyMoves(moves)
+		// clear moves queue
+		g.movesQueue = g.movesQueue[:]
 
 		g.mu.Unlock()
 
