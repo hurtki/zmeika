@@ -2,6 +2,10 @@ package ui
 
 import (
 	"encoding/binary"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -25,19 +29,68 @@ type Model struct {
 	err       error
 }
 
+const pathToSuggestionsFile = "~/tmp/suggestions-ascii-snake.txt"
+
+func expandPath(path string) (string, error) {
+	if !strings.HasPrefix(path, "~/") {
+		return path, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, path[2:]), nil
+}
+
+func GetSuggestions() []string {
+	path, err := expandPath(pathToSuggestionsFile)
+	if err != nil {
+		return nil
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	strs := strings.Split(strings.TrimSpace(string(data)), "\n")
+	return strs
+}
+
+func AddSuggestion(sug string) {
+	path, err := expandPath(pathToSuggestionsFile)
+	if err != nil {
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return
+	}
+
+	existing := GetSuggestions()
+	if slices.Contains(existing, sug) {
+		return
+	}
+
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	f.WriteString(sug + "\n")
+}
+
+func (m *Model) Init() tea.Cmd {
+	return nil
+}
+
 func NewModel() *Model {
 	ti := textinput.New()
-	ti.Placeholder = "host:port"
+	ti.SetSuggestions(GetSuggestions())
 	ti.Focus()
 
 	return &Model{
 		addrInput: ti,
 		st:        AddrChoice,
 	}
-}
-
-func (m *Model) Init() tea.Cmd {
-	return nil
 }
 
 // isAlive проверяет, есть ли на поле хоть одна клетка с нашим playerID.
@@ -100,6 +153,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.st = AddrChoice
 				m.addrInput.SetValue(m.addr) // оставляем последний адрес для удобства
 				m.addrInput.Focus()
+				m.addrInput.SetSuggestions(GetSuggestions())
 				return m, nil
 			}
 

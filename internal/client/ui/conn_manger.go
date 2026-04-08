@@ -49,6 +49,8 @@ func NewConnectionManager(addr string) (*ConnectionManager, error) {
 		return nil, fmt.Errorf("can't establish websocket connection: %w", err)
 	}
 
+	AddSuggestion(addr)
+
 	return &ConnectionManager{
 		wsConn:   conn,
 		playerID: dto.PlayerID,
