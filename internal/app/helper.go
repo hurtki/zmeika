@@ -1,10 +1,5 @@
 package app
 
-import (
-	"fmt"
-	"strings"
-)
-
 func DeduplicateMoves(moves []Move) []Move {
 	seen := make(map[int]struct{}, len(moves))
 	res := make([]Move, 0, len(moves))
@@ -28,26 +23,6 @@ func InGaps(c cord, size int) bool {
 	}
 	return true
 }
-
-func (g *Game) PrintPlot() {
-	var b strings.Builder
-
-	for i := 0; i < len(g.plot); i++ {
-		for j := 0; j < len(g.plot[i]); j++ {
-			c := g.plot[i][j]
-
-			switch {
-			case c.Value == 0:
-				b.WriteString(". ")
-			case c.IsHead:
-				b.WriteString("H ")
-			default:
-				// тело змейки
-				fmt.Fprintf(&b, "%d ", c.Value)
-			}
-		}
-		b.WriteString("\n")
-	}
-
-	fmt.Print(b.String())
+func (g *Game) GetMapSize() int {
+	return len(g.plot)
 }

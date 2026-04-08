@@ -1,8 +1,10 @@
 package app
 
+import "errors"
+
 type Cell struct {
 	// if there is not player here => 0
-	PlayerID int
+	PlayerID int // uint16
 	// if this cell is head of the snake
 	IsHead bool
 
@@ -25,6 +27,13 @@ const (
 	Left
 	Right
 )
+
+func NewDirection(d uint8) (Direction, error) {
+	if d > 3 {
+		return Direction(0), errors.New("not existing direction")
+	}
+	return Direction(d), nil
+}
 
 // Abstract move for game input
 type Move struct {
