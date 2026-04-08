@@ -1,5 +1,8 @@
+version: "3"
 services:
-  backend:
+  ascii-snake:
     build: ./
     container_name: ascii-snake
     restart: always
+    ports:
+      - "${PORT:-8080}:80"

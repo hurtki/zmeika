@@ -19,4 +19,3 @@ FROM alpine:latest
 COPY --from=build /app/entry .
 
 CMD ["./entry"]
-

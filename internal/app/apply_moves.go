@@ -74,14 +74,15 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) (ok bool) {
 		moveCord = cord{x: c.x, y: c.y + 1}
 	}
 
-	startCell := g.plot[c.x][c.y]              // cell before tick
-	moveCell := g.plot[moveCord.x][moveCord.y] // cell that move goes to
-	startCord := c                             // coordinates before tick
+	startCord := c // coordinates before tick
 
 	if !InGaps(moveCord, len(g.plot)) {
 		g.removePlayer(startCord, -1)
 		return
 	}
+
+	startCell := g.plot[c.x][c.y]              // cell before tick
+	moveCell := g.plot[moveCord.x][moveCord.y] // cell that move goes to
 
 	if moveCell.PlayerID == startCell.PlayerID {
 		if moveCell.Value+1 != startCell.Value {
