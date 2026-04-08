@@ -6,6 +6,8 @@ import (
 	"github.com/hurtki/zmeika/internal/app"
 )
 
+// Serializes whole plot into binary format
+// One cell: [[2b player id][1 byte value][1 byte isHead]]
 func SerializePlot(plot [][]app.Cell) []byte {
 	res := make([]byte, 0, len(plot)*len(plot)*4)
 	for _, row := range plot {

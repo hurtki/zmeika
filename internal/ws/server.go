@@ -40,12 +40,12 @@ func (s *Server) HandleWS(conn *websocket.Conn, token string) {
 
 	entry, ok := s.sessions[token]
 	if !ok {
-		s.logger.Debug("no session found, closing conn", "tok", token, "addr", conn.RemoteAddr())
+		s.logger.Error("no session found, closing conn", "tok", token, "addr", conn.RemoteAddr())
 		conn.Close()
 		return
 	}
 	if entry.conn != nil {
-		s.logger.Debug("conn already exists, closing new one", "tok", token, "addr", conn.RemoteAddr())
+		s.logger.Error("conn already exists, closing new one", "tok", token, "addr", conn.RemoteAddr())
 		conn.Close()
 		return
 	}
@@ -59,7 +59,7 @@ func (s *Server) readLoop(conn *websocket.Conn, token string) {
 	for {
 		_, buf, err := conn.ReadMessage()
 		if err != nil {
-			s.logger.Debug("can't read message, closing session", "err", err, "tok", token)
+			s.logger.Error("can't read message, closing session", "err", err, "tok", token)
 			s.closeSession(token)
 			return
 		}
@@ -69,7 +69,7 @@ func (s *Server) readLoop(conn *websocket.Conn, token string) {
 			s.closeSession(token)
 			return
 		}
-		s.logger.Debug("got new move", "direction", motion)
+		s.logger.Debug("Move", "direction", motion, "tok", token, "addr", conn.RemoteAddr())
 		s.mu.Lock()
 		entry, ok := s.sessions[token]
 		s.mu.Unlock()
@@ -85,11 +85,15 @@ func (s *Server) readLoop(conn *websocket.Conn, token string) {
 	}
 }
 
-func (s *Server) writeLoop(conn *websocket.Conn, _ string) {
+func (s *Server) writeLoop(conn *websocket.Conn, token string) {
+	s.logger.Info("Starting updating plot", "tok", token, "addr", conn.RemoteAddr())
 	for {
 		plot, _ := s.usecase.GetMap(context.Background())
-		s.logger.Debug("writing to conn new plot")
-		conn.WriteMessage(websocket.BinaryMessage, SerializePlot(plot))
+		s.logger.Debug("update plot", "tok", token)
+		err := conn.WriteMessage(websocket.BinaryMessage, SerializePlot(plot))
+		if err != nil {
+			s.closeSession(token)
+		}
 	}
 }
 
@@ -97,6 +101,7 @@ func (s *Server) closeSession(token string) {
 	s.mu.Lock()
 	entry, ok := s.sessions[token]
 	if ok {
+		s.logger.Info("closing connection", "tok", token)
 		delete(s.sessions, token)
 	}
 	s.mu.Unlock()

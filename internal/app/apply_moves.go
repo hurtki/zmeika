@@ -15,7 +15,7 @@ func (g *Game) applyMoves(moves []Move) {
 				headsSeen[cell.PlayerID] = cord{x: x, y: y}
 			}
 			v := g.plot[x][y]
-			// DECREMENT ALL THE VALUES
+			// decrement all the values
 			if v.Value > 0 {
 				if v.Value == 1 {
 					g.plot[x][y].IsHead = false
@@ -28,11 +28,11 @@ func (g *Game) applyMoves(moves []Move) {
 
 	for _, m := range moves {
 		if headCord, ok := headsSeen[m.PlayerID]; ok {
-			g.applyOneMoveWithHeadCord(m, headCord)
-			delete(headsSeen, m.PlayerID)
-			continue
-		} else {
-			continue
+			ok := g.applyOneMoveWithHeadCord(m, headCord)
+			if ok {
+				delete(headsSeen, m.PlayerID)
+				continue
+			}
 		}
 	}
 
@@ -60,7 +60,8 @@ func (g *Game) applyMoves(moves []Move) {
 
 // aplies one move, when coordintares of player's head that
 // did the move are known
-func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
+func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) (ok bool) {
+	ok = true
 	moveCord := cord{}
 	switch move.Direction {
 	case Up:
@@ -73,16 +74,22 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 		moveCord = cord{x: c.x, y: c.y + 1}
 	}
 
+	startCell := g.plot[c.x][c.y]              // cell before tick
+	moveCell := g.plot[moveCord.x][moveCord.y] // cell that move goes to
+	startCord := c                             // coordinates before tick
+
 	if !InGaps(moveCord, len(g.plot)) {
-		g.removePlayer(c, -1)
+		g.removePlayer(startCord, -1)
 		return
 	}
 
-	startCell := g.plot[c.x][c.y]
-	moveCell := g.plot[moveCord.x][moveCord.y]
-
 	if moveCell.PlayerID == startCell.PlayerID {
-		return
+		if moveCell.Value+1 != startCell.Value {
+			g.removePlayer(startCord, -1)
+			return
+		}
+		// not "OK" case, when move goes backward
+		return false
 	}
 
 	if moveCell.PlayerID > 0 && moveCell.Value > 0 {
@@ -90,7 +97,7 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 		if moveCell.IsHead {
 			g.removePlayer(moveCord, -1)
 		}
-		g.removePlayer(c, -1)
+		g.removePlayer(startCord, -1)
 		return
 	}
 
@@ -101,7 +108,8 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	g.plot[moveCord.x][moveCord.y].Value = startCell.Value + 1
 
 	// not forgetting to change previous head
-	g.plot[c.x][c.y].IsHead = false
+	g.plot[startCord.x][startCord.y].IsHead = false
+	return
 }
 
 // Removes all the nearby cells with playerID

@@ -14,5 +14,6 @@ func (s *Server) CreateSession(ctx context.Context, token string, playerID int) 
 		conn:      nil,
 		closeOnce: &sync.Once{},
 	}
+
 	return nil
 }
