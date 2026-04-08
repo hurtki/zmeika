@@ -9,17 +9,8 @@ import (
 
 var snakeLength = 3
 
-type Cell struct {
-	Value int // if cell is head => same as snakeLength
-	// then it goes down
-	// if 0 then there is nothing there
-
-	PlayerID int
-	IsHead   bool
-}
-
 type Game struct {
-	plot [][]Cell
+	plot Plot
 
 	// ID for new plater
 	// increment after adding a new one

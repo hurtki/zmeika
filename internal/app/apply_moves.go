@@ -8,9 +8,6 @@ type cord struct {
 }
 
 func (g *Game) applyMoves(moves []Move) {
-
-	// 0:0 is left top pixel
-
 	// seen is used to fastly find players on big field
 	headsSeen := make(map[int]cord)
 
