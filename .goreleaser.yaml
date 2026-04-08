@@ -21,4 +21,4 @@ checksum:
 release:
   github:
     owner: hurtki
-    name: zmeika
+    name: ascii-snake

@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/rand"
 
-	"github.com/hurtki/zmeika/internal/app"
+	"github.com/hurtki/ascii-snake/internal/app"
 
 	"golang.org/x/sync/singleflight"
 )

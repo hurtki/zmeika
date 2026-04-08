@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/hurtki/zmeika/internal/app"
-	"github.com/hurtki/zmeika/internal/domain"
-	http_handlers "github.com/hurtki/zmeika/internal/handlers/http"
-	"github.com/hurtki/zmeika/internal/ws"
+	"github.com/hurtki/ascii-snake/internal/app"
+	"github.com/hurtki/ascii-snake/internal/domain"
+	http_handlers "github.com/hurtki/ascii-snake/internal/handlers/http"
+	"github.com/hurtki/ascii-snake/internal/ws"
 )
 
 func main() {

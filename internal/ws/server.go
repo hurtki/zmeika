@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
-	"github.com/hurtki/zmeika/internal/app"
-	"github.com/hurtki/zmeika/internal/domain"
+	"github.com/hurtki/ascii-snake/internal/app"
+	"github.com/hurtki/ascii-snake/internal/domain"
 )
 
 type sessionEntry struct {
