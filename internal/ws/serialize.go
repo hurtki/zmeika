@@ -7,10 +7,12 @@ import (
 )
 
 func SerializePlot(plot [][]app.Cell) []byte {
-	res := make([]byte, len(plot)*len(plot)*4)
+	res := make([]byte, 0, len(plot)*len(plot)*4)
 	for _, row := range plot {
 		for _, cell := range row {
-			binary.LittleEndian.PutUint16(res, uint16(cell.PlayerID))
+			buf := make([]byte, 2)
+			binary.LittleEndian.PutUint16(buf, uint16(cell.PlayerID))
+			res = append(res, buf...)
 			res = append(res, byte(uint8(cell.Value)))
 			if cell.IsHead {
 				res = append(res, 1)

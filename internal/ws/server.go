@@ -1,11 +1,13 @@
 package ws
 
 import (
+	"context"
+	"log/slog"
 	"sync"
 
+	"github.com/gorilla/websocket"
 	"github.com/hurtki/zmeika/internal/app"
 	"github.com/hurtki/zmeika/internal/domain"
-	"golang.org/x/net/websocket"
 )
 
 type sessionEntry struct {
@@ -20,13 +22,15 @@ type Server struct {
 
 	usecase *domain.GameUsecase
 
-	mu sync.Mutex
+	mu     sync.Mutex
+	logger *slog.Logger
 }
 
-func NewServer(usecase *domain.GameUsecase) *Server {
+func NewServer(usecase *domain.GameUsecase, logger *slog.Logger) *Server {
 	return &Server{
 		sessions: make(map[string]sessionEntry),
 		usecase:  usecase,
+		logger:   logger,
 	}
 }
 
@@ -36,10 +40,12 @@ func (s *Server) HandleWS(conn *websocket.Conn, token string) {
 
 	entry, ok := s.sessions[token]
 	if !ok {
+		s.logger.Debug("no session found, closing conn", "tok", token, "addr", conn.RemoteAddr())
 		conn.Close()
 		return
 	}
 	if entry.conn != nil {
+		s.logger.Debug("conn already exists, closing new one", "tok", token, "addr", conn.RemoteAddr())
 		conn.Close()
 		return
 	}
@@ -50,35 +56,40 @@ func (s *Server) HandleWS(conn *websocket.Conn, token string) {
 }
 
 func (s *Server) readLoop(conn *websocket.Conn, token string) {
-	buf := make([]byte, 1)
-	n, err := conn.Read(buf)
-	if n != 1 || err != nil {
-		s.closeSession(token)
-		return
-	}
+	for {
+		_, buf, err := conn.ReadMessage()
+		if err != nil {
+			s.logger.Debug("can't read message, closing session", "err", err, "tok", token)
+			s.closeSession(token)
+			return
+		}
 
-	motion, err := app.NewDirection(uint8(buf[0]))
-	if err != nil {
-		s.closeSession(token)
-		return
-	}
-	s.mu.Lock()
-	entry, ok := s.sessions[token]
-	s.mu.Unlock()
-	if !ok {
-		s.closeSession(token)
-		return
-	}
+		motion, err := app.NewDirection(uint8(buf[0]))
+		if err != nil {
+			s.closeSession(token)
+			return
+		}
+		s.logger.Debug("got new move", "direction", motion)
+		s.mu.Lock()
+		entry, ok := s.sessions[token]
+		s.mu.Unlock()
+		if !ok {
+			s.closeSession(token)
+			return
+		}
 
-	playerID := entry.playerID
+		playerID := entry.playerID
 
-	_ = s.usecase.Move(conn.Request().Context(), motion, playerID)
+		_ = s.usecase.Move(context.Background(), motion, playerID)
+
+	}
 }
 
 func (s *Server) writeLoop(conn *websocket.Conn, _ string) {
 	for {
-		plot, _ := s.usecase.GetMap(conn.Request().Context())
-		conn.Write(SerializePlot(plot))
+		plot, _ := s.usecase.GetMap(context.Background())
+		s.logger.Debug("writing to conn new plot")
+		conn.WriteMessage(websocket.BinaryMessage, SerializePlot(plot))
 	}
 }
 

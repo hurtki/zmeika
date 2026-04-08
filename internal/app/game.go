@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var snakeLength = 6
+var snakeLength = 15
 
 type Game struct {
 	plot Plot
@@ -72,6 +72,7 @@ func (g *Game) Start(tickTime time.Duration) {
 		g.addQueue = g.addQueue[:0]
 
 		g.mu.Unlock()
+		g.AfterTickCh <- struct{}{}
 	}
 }
 
