@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/hurtki/ascii-snake/internal/domain"
+	"github.com/hurtki/ascii-snake/internal/srv/domain"
 )
 
 type JoinHandler struct {

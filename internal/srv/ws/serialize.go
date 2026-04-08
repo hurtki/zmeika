@@ -3,7 +3,7 @@ package ws
 import (
 	"encoding/binary"
 
-	"github.com/hurtki/ascii-snake/internal/app"
+	"github.com/hurtki/ascii-snake/internal/srv/app"
 )
 
 // Serializes whole plot into binary format
