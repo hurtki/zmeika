@@ -1,4 +1,8 @@
 # zmeika
+## TUI online snake game
+
+<img width="906" height="1130" alt="image" src="https://github.com/user-attachments/assets/8480648d-b7fc-427d-9667-a4ba710de3e0" />
+
 
 ### Linux (x86_64)
 
