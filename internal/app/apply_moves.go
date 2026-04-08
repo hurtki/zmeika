@@ -1,5 +1,7 @@
 package app
 
+import "fmt"
+
 type cord struct {
 	x int
 	y int
@@ -17,12 +19,19 @@ func (g *Game) applyMoves(moves []Move) {
 			if cell.Value != 0 && cell.IsHead {
 				headsSeen[cell.PlayerID] = cord{x: x, y: y}
 			}
+			v := g.plot[x][y]
 			// DECREMENT ALL THE VALUES
-			if g.plot[x][y].Value > 0 {
+			if v.Value > 0 {
+				if v.Value == 1 {
+					g.plot[x][y].IsHead = false
+					g.plot[x][y].PlayerID = 0
+				}
 				g.plot[x][y].Value--
 			}
 		}
 	}
+	fmt.Println("print after decrementing all")
+	g.PrintPlot()
 
 	for _, m := range moves {
 		if headCord, ok := headsSeen[m.PlayerID]; ok {
@@ -52,6 +61,7 @@ func (g *Game) applyMoves(moves []Move) {
 		case InGaps(cord{c.x, c.y + 1}, len(g.plot)) && g.plot[c.x][c.y+1].PlayerID == id:
 			m.Direction = left
 		}
+		fmt.Println("after checking direction decided: direction: ", m.Direction, "applying one move from", c)
 		g.applyOneMoveWithHeadCord(m, c)
 	}
 }
@@ -72,6 +82,7 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	}
 
 	if !InGaps(moveCord, len(g.plot)) {
+		fmt.Println("not in gaps, removing cause rached border:", c)
 		g.removePlayer(c, -1)
 		return
 	}
@@ -84,6 +95,7 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	}
 
 	if moveCell.PlayerID > 0 && moveCell.Value > 0 {
+		fmt.Println("collision")
 		// if move is into someones head => kill both
 		if moveCell.IsHead {
 			g.removePlayer(moveCord, -1)
@@ -97,7 +109,9 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	// should have value one bigger, then previous head cell
 	// cause all the cells were decremented, before applying moves
 	g.plot[moveCord.x][moveCord.y].Value = startCell.Value + 1
+	fmt.Println("updated after move to free cell", g.plot[moveCord.x][moveCord.y])
 
+	fmt.Println("removed head from prevous on", c.x, c.y)
 	// not forgetting to change previous head
 	g.plot[c.x][c.y].IsHead = false
 }

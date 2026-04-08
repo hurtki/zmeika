@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 )
@@ -49,19 +51,58 @@ func InitGame(size int) *Game {
 }
 
 func (g *Game) Start() {
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(time.Second * 2)
 
 	for {
 		<-t.C
+
+		g.PrintPlot()
+
 		// TICK TIME LOCK
 		g.mu.Lock()
 
 		moves := DeduplicateMoves(g.movesQueue)
 		g.applyMoves(moves)
+
 		// clear moves queue
-		g.movesQueue = g.movesQueue[:]
+		g.movesQueue = g.movesQueue[:0]
+
+		for i, callback := range g.addQueue {
+			id, ok := g.CreatePlayer()
+			if !ok {
+				for j := i; i < len(g.addQueue); i++ {
+					g.addQueue[j](0, ErrNoPlaceOnPlot)
+				}
+				break
+			}
+			callback(id, nil)
+		}
+		g.addQueue = g.addQueue[:0]
 
 		g.mu.Unlock()
 
 	}
+}
+
+func (g *Game) PrintPlot() {
+	var b strings.Builder
+
+	for i := 0; i < len(g.plot); i++ {
+		for j := 0; j < len(g.plot[i]); j++ {
+			c := g.plot[i][j]
+
+			switch {
+			case c.Value == 0:
+				b.WriteString(". ")
+			case c.IsHead:
+				b.WriteString("H ")
+			default:
+				// тело змейки
+				fmt.Fprintf(&b, "%d ", c.Value)
+			}
+		}
+		b.WriteString("\n")
+	}
+
+	fmt.Print(b.String())
 }

@@ -10,8 +10,7 @@ var (
 // ErrNoPlaceOnPlot is returned if there is no place
 // not for tick time!
 func (g *Game) AddPlayer() (int, error) {
-	g.mu.Lock()
-	defer g.mu.Unlock()
+	g.mu.RLock()
 
 	ch := make(chan struct {
 		id  int
@@ -26,6 +25,7 @@ func (g *Game) AddPlayer() (int, error) {
 		}{playerID, err}
 	})
 	g.addQueueMu.Unlock()
+	g.mu.RUnlock()
 
 	res := <-ch
 	return res.id, res.err

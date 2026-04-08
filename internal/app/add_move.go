@@ -5,8 +5,8 @@ package app
 // *for example if there were two, only first one will be applied
 // not for tick time!
 func (g *Game) AddMove(move Move) {
-	g.mu.Lock()
-	defer g.mu.Unlock()
+	g.mu.RLock()
+	defer g.mu.RUnlock()
 
 	g.addQueueMu.Lock()
 	g.movesQueue = append(g.movesQueue, move)
