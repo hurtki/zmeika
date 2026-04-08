@@ -20,10 +20,10 @@ type Plot [][]Cell
 type Direction uint8
 
 const (
-	up Direction = iota
-	down
-	left
-	right
+	Up Direction = iota
+	Down
+	Left
+	Right
 )
 
 // Abstract move for game input

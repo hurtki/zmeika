@@ -1,7 +1,5 @@
 package app
 
-import "fmt"
-
 type cord struct {
 	x int
 	y int
@@ -27,8 +25,6 @@ func (g *Game) applyMoves(moves []Move) {
 			}
 		}
 	}
-	fmt.Println("print after decrementing all")
-	g.PrintPlot()
 
 	for _, m := range moves {
 		if headCord, ok := headsSeen[m.PlayerID]; ok {
@@ -47,18 +43,17 @@ func (g *Game) applyMoves(moves []Move) {
 		switch {
 		// prevous was upper => go down
 		case InGaps(cord{c.x - 1, c.y}, len(g.plot)) && g.plot[c.x-1][c.y].PlayerID == id:
-			m.Direction = down
+			m.Direction = Down
 		// previous was lower => go up
 		case InGaps(cord{c.x + 1, c.y}, len(g.plot)) && g.plot[c.x+1][c.y].PlayerID == id:
-			m.Direction = up
+			m.Direction = Up
 		// previous was at left to head => go right
 		case InGaps(cord{c.x, c.y - 1}, len(g.plot)) && g.plot[c.x][c.y-1].PlayerID == id:
-			m.Direction = right
+			m.Direction = Right
 		// previous was at right to head => go left
 		case InGaps(cord{c.x, c.y + 1}, len(g.plot)) && g.plot[c.x][c.y+1].PlayerID == id:
-			m.Direction = left
+			m.Direction = Left
 		}
-		fmt.Println("after checking direction decided: direction: ", m.Direction, "applying one move from", c)
 		g.applyOneMoveWithHeadCord(m, c)
 	}
 }
@@ -68,18 +63,17 @@ func (g *Game) applyMoves(moves []Move) {
 func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	moveCord := cord{}
 	switch move.Direction {
-	case up:
+	case Up:
 		moveCord = cord{x: c.x - 1, y: c.y}
-	case down:
+	case Down:
 		moveCord = cord{x: c.x + 1, y: c.y}
-	case left:
+	case Left:
 		moveCord = cord{x: c.x, y: c.y - 1}
-	case right:
+	case Right:
 		moveCord = cord{x: c.x, y: c.y + 1}
 	}
 
 	if !InGaps(moveCord, len(g.plot)) {
-		fmt.Println("not in gaps, removing cause rached border:", c)
 		g.removePlayer(c, -1)
 		return
 	}
@@ -92,7 +86,6 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	}
 
 	if moveCell.PlayerID > 0 && moveCell.Value > 0 {
-		fmt.Println("collision")
 		// if move is into someones head => kill both
 		if moveCell.IsHead {
 			g.removePlayer(moveCord, -1)
@@ -106,9 +99,7 @@ func (g *Game) applyOneMoveWithHeadCord(move Move, c cord) {
 	// should have value one bigger, then previous head cell
 	// cause all the cells were decremented, before applying moves
 	g.plot[moveCord.x][moveCord.y].Value = startCell.Value + 1
-	fmt.Println("updated after move to free cell", g.plot[moveCord.x][moveCord.y])
 
-	fmt.Println("removed head from prevous on", c.x, c.y)
 	// not forgetting to change previous head
 	g.plot[c.x][c.y].IsHead = false
 }

@@ -3,7 +3,7 @@ package app
 // CreatePlayer finds place for new snake in horizontal or vertical position
 // Initializes cells for snake
 // For Tick time!
-func (g *Game) CreatePlayer() (int, bool) {
+func (g *Game) createPlayer() (int, bool) {
 	rows := len(g.plot)
 	if rows == 0 {
 		return 0, false
