@@ -17,8 +17,8 @@ import (
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdin, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	logger.Info("starting")
-	game := app.InitGame(20)
-	go game.Start(time.Second / 3)
+	game := app.InitGame(50)
+	go game.Start(time.Second / 10)
 
 	var wsHandler ws.Server
 	usecase := domain.NewGameUsecase(game, &wsHandler)
